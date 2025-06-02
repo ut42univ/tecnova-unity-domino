@@ -4,11 +4,13 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
-    public float walkSpeed = 4f;
-    public float sprintSpeed = 14f;
+    public float walkSpeed = 6f;
+    public float sprintSpeed = 9f;
     public float maxVelocityChange = 10f;
     [Space]
-    public float jumpHeight = 30f;
+    public float jumpHeight = 3f;
+    public LayerMask groundMask = 1;
+    public float groundCheckDistance = 0.1f;
 
     private Vector2 input;
     private Rigidbody rb;
@@ -31,27 +33,26 @@ public class PlayerMovement : MonoBehaviour
         input.Normalize();
 
         isSprinting = Input.GetButton("Sprint");
-        isJumping = Input.GetButtonDown("Jump");
+        isJumping = Input.GetButton("Jump");
+
+        CheckGrounded();
     }
 
     void FixedUpdate()
     {
-        if (input.magnitude > 0.5f)
-        {
-            rb.AddForce(CalcMovement(isSprinting ? sprintSpeed : walkSpeed), ForceMode.VelocityChange);
-        }
-        else
-        {
-            Vector3 velocity1 = rb.velocity;
-            velocity1 = new Vector3(
-                velocity1.x * 0.2f * Time.fixedDeltaTime,
-                velocity1.y,
-                velocity1.z * 0.2f * Time.fixedDeltaTime
-            );
+        rb.AddForce(CalcMovement(isSprinting ? sprintSpeed : walkSpeed), ForceMode.VelocityChange);
 
-            rb.velocity = velocity1;
-
+        // ジャンプ処理
+        if (isJumping && isGrounded)
+        {
+            rb.AddForce(Vector3.up * jumpHeight, ForceMode.Impulse);
         }
+    }
+
+    void CheckGrounded()
+    {
+        isGrounded = Physics.Raycast(transform.position, Vector3.down,
+            GetComponent<Collider>().bounds.extents.y + groundCheckDistance, groundMask);
     }
 
     Vector3 CalcMovement(float _speed)
@@ -63,7 +64,7 @@ public class PlayerMovement : MonoBehaviour
 
         Vector3 velocity = rb.velocity;
 
-        if (input.magnitude > 0.5f)
+        if (input.magnitude > 0.1f)
         {
             Vector3 velocityChange = targetVelocity - velocity;
 
@@ -76,7 +77,8 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-            return new Vector3();
+            Vector3 stopForce = new Vector3(-velocity.x, 0, -velocity.z);
+            return stopForce;
         }
     }
 }
