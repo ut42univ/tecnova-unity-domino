@@ -260,10 +260,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   walkSpeed: 6
-  sprintSpeed: 9
+  sprintSpeed: 15
   maxVelocityChange: 10
   jumpHeight: 3
   groundMask:
     serializedVersion: 2
     m_Bits: 8
-  groundCheckDistance: 0.1
+  groundCheckDistance: 0.2
